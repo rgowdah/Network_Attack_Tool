@@ -298,11 +298,11 @@ def dhcp_starvation(interface):
         #The server will respond with a DHCP ACK and the IP address will be leased.
         srp(dhcp_req_pkt, iface = interface, timeout = 2.5, verbose = 0)
     #Calling the function
-try:
-    for iterate in range(0, int(pkt_no)):
-        generate_dhcp_seq()
-except IndexError:
-    print("\nDone. No more addresses to steal! :)\n")
+    try:
+        for iterate in range(0, int(pkt_no)):
+            generate_dhcp_seq()
+    except IndexError:
+        print("\nDone. No more addresses to steal! :)\n")
 
 # Rogue DHCP Server Detector
 def rogue_dhcp_server_detector(interface):
@@ -387,13 +387,14 @@ def nmap_scanner():
             print("Guessing OS type... MAC OS.\n")
         else:
             print("Cannot detect host OS --> no open ports found.")
-#Running the function
-icmp_scan()
+    #Running the function
+    icmp_scan()
+
 
 def ip_address_check(ip_address):
-    #Checking IP address validity
+    # Checking IP address validity
     while True:
-        #Checking octets            
+        # Checking octets
         a = ip_address.split('.')
                         
         if (len(a) == 4) and (1 <= int(a[0]) <= 223) and (int(a[0]) != 127) and (int(a[0]) != 169 or int(a[1]) != 254) and (0 <= int(a[1]) <= 255 and 0 <= int(a[2]) <= 255 and 0 <= int(a[3]) <= 255):
@@ -405,7 +406,7 @@ def ip_address_check(ip_address):
 
 ################## USER MENU #################
 try:
-    #Enter option for the first screen
+    # Enter option for the first screen
     while True:
         print("\nUse this tool to:\n1 - Traffic sniffing using scapy\n2 - Basic Traceroute\n3 - TCP SYN Traceroute\n" +
         "4 - UDP Traceroute\n5 - DNS Traceroute\n6 - TCP SYN Scan\n7 - TCP ACK Scan\n8 - TCP FIN Scan\n9 - TCP XMAS Scan\n" +
@@ -416,86 +417,309 @@ try:
         user_option_sim = raw_input("Enter your choice: ")
         
         if user_option_sim == "1":
-            print("\n ex: ip= '172.16.1.3' interface = 'enp0s3'")
-            
-            ip = raw_input("\nEnter the Valid IP address: ")
-            ip_address_check(ip)
-            interface = raw_input("Enter interface on which to sniff packets: ")
-            
-            print("\nWaiting for clients to obtain IP addresses...\n")
-            
-            try:
-                #Calling the function for the required number of times (pkt_no)
-                traffic_sniffing_scapy(ip,interface)
-                
-            except IndexError:
-                print("Check your IP, Interface and try again.\n")
-                sys.exit()
-                
-        elif user_option_sim == "r":
             while True:
-                print "\ns - Release a single address\na - Release all addresses\ne - Exit to the previous screen\n"
-                
-                user_option_release = raw_input("Enter your choice: ")
-                
-                if user_option_release == "s":
-                    print "\n"
-                    
-                    user_option_address = raw_input("Enter IP address to release: ")
-                    
-                    #print all_leased_ips
-                    #print server_id
-                    #print client_mac
-                    
-                    try:
-                        #Check if required IP is in the list and run the release function for it
-                        if user_option_address in all_leased_ips:
-                            index = all_leased_ips.index(user_option_address)
+                print("\n ex: ip= '172.16.1.3' interface = 'enp0s3'")
 
-                            generate_dhcp_release(user_option_address, client_mac[index], server_id[index])
-                            
-                            print "\nSending RELEASE packet...\n"
-                            
-                        else:
-                            print "IP Address not in list.\n"
-                            continue
-                    
-                    except (NameError, IndexError):
-                        print "\nSimulating DHCP RELEASES cannot be done separately, without prior DHCP Client simulation."
-                        print "Restart the program and simulate DHCP Clients and RELEASES in the same program session.\n"
-                        sys.exit()
-                
-                elif user_option_release == "a":
-                    
-                    #print all_leased_ips
-                    #print server_id
-                    #print client_mac
-                    
-                    try:
-                        #Check if required IP is in the list and run the release function for it
-                        for user_option_address in all_leased_ips:
-                            
-                            index = all_leased_ips.index(user_option_address)
+                ip = raw_input("\nEnter a Valid IP address: ")
+                ip_address_check(ip)
+                interface = raw_input("Enter interface on which to sniff packets: ")
 
-                            generate_dhcp_release(user_option_address, client_mac[index], server_id[index])
-                            
-                    except (NameError, IndexError):
-                        print "\nSimulating DHCP RELEASES cannot be done separately, without prior DHCP Client simulation."
-                        print "Restart the program and simulate DHCP Clients and RELEASES in the same program session.\n"
-                        sys.exit()
-                    
-                    print "\nThe RELEASE packets have been sent.\n"
-                    
-                    #Erasing all leases from the file
-                    open("DHCP_Leases.txt", "w").close()
-                    
-                    print "File 'DHCP_Leases.txt' has been cleared."
-                    
-                    continue
+                print("\nWaiting for clients to obtain IP addresses...\n")
+
+                try:
+                    #Calling the function for the required number of times (pkt_no)
+                    traffic_sniffing_scapy(ip,interface)
+
+                except IndexError:
+                    print("Check your IP, Interface and try again.\n")
+                    sys.exit()
                 
-                else:
-                    break
-            
+        elif user_option_sim == "2":
+            while True:
+                print("\n ex : target = 'www.google.com'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for traceroute by passing domain name
+                    basic_traceroute(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "3":
+            while True:
+                print("\n ex : target = 'www.google.com'/ '8.8.8.8'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP SYN traceroute by passing domain name
+                    tcp_syn_traceroute(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "4":
+            while True:
+                print("\n ex : target = 'www.google.com'/ '8.8.8.8'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for UDP traceroute by passing domain name
+                    udp_traceroute(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "5":
+            while True:
+                print("\n ex : target = '8.8.8.8'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for DNS traceroute
+                    dns_traceroute(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "6":
+            while True:
+                print("\n ex : target = '172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP SYN SCAN
+                    tcp_syn_scan(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "7":
+            while True:
+                print("\n ex : target = '172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP ACK Scan
+                    tcp_ack_scan(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "8":
+            while True:
+                print("\n ex : target = '172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP FIN Scan
+                    tcp_fin_scan(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "9":
+            while True:
+                print("\n ex : target = '172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP XMAS Scan
+                    tcp_xmas_scan(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "10":
+            while True:
+                print("\n ex : target = '172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP NULL Scan
+                    tcp_null_scan(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "11":
+            while True:
+                print("\n ex : target = '172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for TCP PORT Scan
+                    tcp_port_scan(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "12":
+            while True:
+                print("\n ex: targetSubnet='172.16.1.0/24' targetIp = '172.16.1.*'")
+
+                targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
+                targetIp = raw_input("\nEnter a Valid Target IP: ")
+                interface = raw_input("Enter interface on which to ping packets: ")
+
+                try:
+                    # Calling the function for ARP Ping
+                    arp_ping(targetSubnet, targetIp, interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "13":
+            while True:
+                print("\n ex: targetSubnet='172.16.1.2-10'")
+
+                targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
+                interface = raw_input("Enter interface on which to ping packets: ")
+
+                try:
+                    # Calling the function for ICMP Ping
+                    icmp_ping(targetSubnet, interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "14":
+            while True:
+                print("\n ex: targetSubnet='172.16.1.2-10'")
+
+                targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
+                interface = raw_input("Enter interface on which to ping packets: ")
+
+                try:
+                    # Calling the function for TCP Ping
+                    tcp_ping(targetSubnet, interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "15":
+            while True:
+                print("\n ex: targetSubnet='172.16.1.2-10'")
+
+                targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
+                interface = raw_input("Enter interface on which to ping packets: ")
+
+                try:
+                    # Calling the function for UDP Ping
+                    udp_ping(targetSubnet, interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "16":
+            while True:
+                print("\n ex: check arp packet format")
+
+                interface = raw_input("Enter the arp packet to be monitored: ")
+
+                try:
+                    # Calling the function for arp packet monitor
+                    arp_monitor(packet)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "17":
+            while True:
+                print("\n ex: sourceIp = '172.16.1.233' destinationIp= '172.16.1.3' interface = 'enp0s3'")
+
+                sourceIp = raw_input("\nEnter a Valid Source IP: ")
+                destinationIp = raw_input("\nEnter a Valid destination IP: ")
+                interface = raw_input("Enter interface on which to perform arp cache poisoning: ")
+
+                try:
+                    # Calling the function for arp cache poisoning
+                    arp_cache_poisoning(sourceIp, destinationIp, interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "18":
+            while True:
+                print("\n ex: targetSubnet='172.16.1.2'")
+
+                target = raw_input("\nEnter a Valid Target: ")
+
+                try:
+                    # Calling the function for UDP Ping
+                    syn_flooding(target)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "19":
+            while True:
+                print("\n ex: interface = 'enp0s3'")
+
+                interface = raw_input("Enter interface dhcp starvation attack: ")
+
+                try:
+                    # Calling the function for dhcp starvation
+                    dhcp_starvation(interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "20":
+            while True:
+                print("\n ex: interface = 'enp0s3'")
+
+                interface = raw_input("Enter interface rogue dhcp server detector: ")
+
+                try:
+                    # Calling the function for rogue dhcp server detector
+                    rogue_dhcp_server_detector(interface)
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
+        elif user_option_sim == "21":
+            while True:
+                print("\n ex: targets = ['172.16.1.2', '172.16.1.3', '172.16.1.150', '172.16.1.100'] "
+                      "ports = [50743, 111, 135, 22] interface = 'enp0s3'")
+
+                try:
+                    # Calling the function for nmap scanner
+                    nmap_scanner()
+
+                except IndexError:
+                    print("Check your target and try again.\n")
+                    sys.exit()
+
         else:
             print "Exiting... See ya...\n\n"
             sys.exit()
