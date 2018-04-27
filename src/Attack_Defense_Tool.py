@@ -14,8 +14,8 @@ logging.getLogger("scapy.loading").setLevel(logging.ERROR)
 try:
     from scapy.all import *
 except ImportError:
-    print("Scapy package for Python is not installed on your system.")
-    print("Get it from https://pypi.python.org/pypi/scapy and try again.")
+    print "Scapy package for Python is not installed on your system.")
+    print "Get it from https://pypi.python.org/pypi/scapy and try again.")
     sys.exit()
 
 # Traffic sniffing using scapy
@@ -61,14 +61,17 @@ def dns_traceroute(target):
     #Defining the destination name/IP
     # target = '8.8.8.8'
     #Performing the traceroute
-    ans,unans = traceroute(target, maxttl = 10, timeout = 5, l4 = UDP(sport = RandShort()) / DNS(qd = DNSQR(qname = "www.google.com")))
+    ans,unans = traceroute(target, maxttl = 10, timeout = 5, l4 = UDP(sport = RandShort()) /
+                                                                  DNS(qd = DNSQR(qname = "www.google.com")))
 
 # TCP SYN Scan
 '''
 An attacker uses a SYN scan to determine the status of ports on the remote target.
-RFC 793 defines the required behavior of any TCP/IP device in that an incoming connection request begins with a SYN packet, which in turn must be followed by a SYN/ACK packet from the receiving service.
+RFC 793 defines the required behavior of any TCP/IP device in that an incoming connection request begins with a SYN 
+packet, which in turn must be followed by a SYN/ACK packet from the receiving service.
 When a SYN is sent to an open port and unfiltered port, a SYN/ACK will be generated.
-When a SYN packet is sent to a closed port a RST is generated, indicating the port is closed. When SYN scanning to a particular port generates no response, or when the request triggers ICMP Type 3 unreachable errors, the port is filtered.
+When a SYN packet is sent to a closed port a RST is generated, indicating the port is closed. When SYN scanning to a 
+particular port generates no response, or when the request triggers ICMP Type 3 unreachable errors, the port is filtered.
 Source: https://capec.mitre.org/data/definitions/287.html
 '''
 def tcp_syn_scan(target):
@@ -79,22 +82,25 @@ def tcp_syn_scan(target):
     #The results, based on open/closed ports
     for sent, received in ans:
         if received.haslayer(TCP) and str(received[TCP].flags) == "18":
-            print(str(sent[TCP].dport) + " is OPEN!")
+            print str(sent[TCP].dport) + " is OPEN!"
         elif received.haslayer(TCP) and str(received[TCP].flags) == "20":
-            print(str(sent[TCP].dport) + " is closed!")
+            print str(sent[TCP].dport) + " is closed!"
         elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
     #Handling unanswered packets
     for sent in unans:
-        print(str(sent[TCP].dport) + " is filtered!")
+        print str(sent[TCP].dport) + " is filtered!"
 
 
 # TCP ACK Scan
 '''
 An attacker uses TCP ACK segments to gather information about firewall or ACL configuration.
 The purpose of this type of scan is to discover information about filter configurations rather than port state.
-When a TCP ACK segment is sent to a closed port, or sent out-of-sync to a listening port, the RFC 793 expected behavior is for the device to respond with a RST. Getting RSTs back in response to a ACK scan gives the attacker useful information that can be used to infer the type of firewall present. Stateful firewalls will discard out-of-sync ACK packets, leading to no response. When this occurs the port is marked as filtered.
-When RSTs are received in response, the ports are marked as unfiltered, as the ACK packets solicited the expected behavior from a port.
+When a TCP ACK segment is sent to a closed port, or sent out-of-sync to a listening port, the RFC 793 expected
+behavior is for the device to respond with a RST. Getting RSTs back in response to a ACK scan gives the attacker
+useful information that can be used to infer the type of firewall present. Stateful firewalls will discard out-of
+-sync ACK packets, leading to no response. When this occurs the port is marked as filtered.When RSTs are received 
+in response, the ports are marked as unfiltered, as the ACK packets solicited the expected behavior from a port.
 Source: https://capec.mitre.org/data/definitions/305.html
 '''
 def tcp_ack_scan(target):
@@ -105,19 +111,23 @@ def tcp_ack_scan(target):
     #The results, based on filtered/unfiltered ports
     for sent, received in ans:
         if received.haslayer(TCP) and str(received[TCP].flags) == "4":
-            print(str(sent[TCP].dport) + " is UNFILTERED!")
+            print str(sent[TCP].dport) + " is UNFILTERED!"
         elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
     #Handling unanswered packets
     for sent in unans:
-        print(str(sent[TCP].dport) + " is filtered!")
+        print str(sent[TCP].dport) + " is filtered!"
 
 
 # TCP FIN Scan
 '''
-An attacker uses a TCP FIN scan to determine if ports are closed on the target machine. This scan type is accomplished by sending TCP segments with the FIN bit set in the packet header. The RFC 793 expected behavior is that any TCP segment with an out-of-state Flag sent to an open port is discarded, whereas segments with out-of-state flags sent to closed ports should be handled with a RST in response.
-Many operating systems, however, do not implement RFC 793 exactly and for this reason FIN scans do not work as expected against these devices. Some
-operating systems, like Microsoft Windows, send a RST packet in response to any out-of-sync (or malformed) TCP segments received by a listening socket (rather than dropping the packet via RFC 793), thus preventing an attacker from distinguishing between open and closed ports.
+An attacker uses a TCP FIN scan to determine if ports are closed on the target machine. This scan type is accomplished
+by sending TCP segments with the FIN bit set in the packet header. The RFC 793 expected behavior is that any TCP segment
+with an out-of-state Flag sent to an open port is discarded, whereas segments with out-of-state flags sent to closed 
+ports should be handled with a RST in response. Many operating systems, however, do not implement RFC 793 exactly and 
+for this reason FIN scans do not work as expected against these devices. Some operating systems, like Microsoft Windows,
+send a RST packet in response to any out-of-sync (or malformed) TCP segments received by a listening socket (rather than
+dropping the packet via RFC 793), thus preventing an attacker from distinguishing between open and closed ports.
 Source: https://capec.mitre.org/data/definitions/302.html
 '''
 def tcp_fin_scan(target):
@@ -129,17 +139,23 @@ def tcp_fin_scan(target):
     #The results, based on open/closed ports
     for sent, received in ans:
         if received.haslayer(TCP) and str(received[TCP].flags) == "20":
-            print(str(sent[TCP].dport) + " is closed!")
+            print str(sent[TCP].dport) + " is closed!"
         elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
     #Handling unanswered packets
     for sent in unans:
-        print(str(sent[TCP].dport) + " is open/filtered!")
+        print str(sent[TCP].dport) + " is open/filtered!"
 
 # TCP Xmas Scan
 '''
-An attacker uses a TCP XMAS scan to determine if ports are closed on the target machine. This scan type is accomplished by sending TCP segments with the all flags sent in the packet header, generating packets that are illegal based on RFC 793. The RFC 793 expected behavior is that any TCP segment with an out-of-state Flag sent to an open port is discarded, whereas segments with out-of-state flags sent to closed ports should be handled with a RST in response.
-Many operating systems, however, do not implement RFC 793 exactly and for this reason FIN scans do not work as expected against these devices. Some operating systems, like Microsoft Windows, send a RST packet in response to any out-of-sync (or malformed) TCP segments received by a listening socket (rather than dropping the packet via RFC 793), thus preventing an attacker from distinguishing between open and closed ports.
+An attacker uses a TCP XMAS scan to determine if ports are closed on the target machine. This scan type is accomplished
+by sending TCP segments with the all flags sent in the packet header, generating packets that are illegal based on RFC 
+793. The RFC 793 expected behavior is that any TCP segment with an out-of-state Flag sent to an open port is discarded,
+whereas segments with out-of-state flags sent to closed ports should be handled with a RST in response.
+Many operating systems, however, do not implement RFC 793 exactly and for this reason FIN scans do not work as expected
+against these devices. Some operating systems, like Microsoft Windows, send a RST packet in response to any out-of-sync
+(or malformed) TCP segments received by a listening socket (rather than dropping the packet via RFC 793), thus 
+preventing an attacker from distinguishing between open and closed ports.
 Source: https://capec.mitre.org/data/definitions/303.html
 '''
 def tcp_xmas_scan(target):
@@ -150,17 +166,25 @@ def tcp_xmas_scan(target):
     #The results based on closed ports
     for sent, received in ans:
         if received.haslayer(TCP) and str(received[TCP].flags) == "20":
-            print(str(sent[TCP].dport) + " is closed!")
+            print str(sent[TCP].dport) + " is closed!"
         elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
     #Handling unanswered packets
     for sent in unans:
-        print(str(sent[TCP].dport) + " is open/filtered!")
+        print str(sent[TCP].dport) + " is open/filtered!"
 
 # TCP Null Scan
 '''
-An attacker uses a TCP NULL scan to determine if ports are closed on the target machine. This scan type is accomplished by sending TCP segments with no flags in the packet header, generating packets that are illegal based on RFC 793. The RFC 793 expected behavior is that any TCP segment with an out-of-state Flag sent to an open port is discarded, whereas segments with out-of-state flags sent to closed ports should be handled with a RST in response. This behavior should allow an attacker to scan for closed ports by sending certain types of rule-breaking packets (out of sync or disallowed by the TCB) and detect closed ports via RST packets.
-Many operating systems, however, do not implement RFC 793 exactly and for this reason NULL scans do not work as expected against these devices. Some operating systems, like Microsoft Windows, send a RST packet in response to any out-of-sync (or malformed) TCP segments received by a listening socket (rather than dropping the packet via RFC 793), thus preventing an attacker from distinguishing between open and closed ports.
+An attacker uses a TCP NULL scan to determine if ports are closed on the target machine. This scan type is accomplished
+by sending TCP segments with no flags in the packet header, generating packets that are illegal based on RFC 793. The 
+RFC 793 expected behavior is that any TCP segment with an out-of-state Flag sent to an open port is discarded, whereas
+segments with out-of-state flags sent to closed ports should be handled with a RST in response. This behavior should 
+allow an attacker to scan for closed ports by sending certain types of rule-breaking packets (out of sync or 
+disallowed by the TCB) and detect closed ports via RST packets. Many operating systems, however, do not implement RFC
+793 exactly and for this reason NULL scans do not work as expected against these devices. Some operating systems, like
+Microsoft Windows, send a RST packet in response to any out-of-sync (or malformed) TCP segments received by a listening
+socket (rather than dropping the packet via RFC 793), thus preventing an attacker from distinguishing between open and 
+closed ports.
 Source: https://capec.mitre.org/data/definitions/304.html
 '''
 def tcp_null_scan(target):
@@ -171,12 +195,12 @@ def tcp_null_scan(target):
     #The results based on closed ports
     for sent, received in ans:
         if received.haslayer(TCP) and str(received[TCP].flags) == "20":
-            print(str(sent[TCP].dport) + " is closed!")
+            print str(sent[TCP].dport) + " is closed!"
         elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
     #Handling unanswered packets
     for sent in unans:
-        print(str(sent[TCP].dport) + " is open/filtered!")
+        print str(sent[TCP].dport) + " is open/filtered!"
 
 # TCP Port Scan
 def tcp_port_scan(target):
@@ -188,14 +212,14 @@ def tcp_port_scan(target):
     #Send a TCP SYN on each port. Wait for a SYN-ACK or a RST or an ICMP error (secdev.org)
     for sent, received in ans:
         if received.haslayer(TCP) and str(received[TCP].flags) == "18":
-            print(str(sent[TCP].dport) + " is OPEN!")
+            print str(sent[TCP].dport) + " is OPEN!"
         elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
     #Handling unanswered packets
     for sent in unans:
-        print(str(sent[TCP].dport) + " is filtered!")
+        print str(sent[TCP].dport) + " is filtered!"
 
-    print("\nAll other ports are closed.\n")
+    print "\nAll other ports are closed.\n"
 
 # ARP Ping
 def arp_ping(targetSubnet,targetIp,interface):
@@ -302,7 +326,7 @@ def dhcp_starvation(interface):
         for iterate in range(0, int(pkt_no)):
             generate_dhcp_seq()
     except IndexError:
-        print("\nDone. No more addresses to steal! :)\n")
+        print "\nDone. No more addresses to steal! :)\n")
 
 # Rogue DHCP Server Detector
 def rogue_dhcp_server_detector(interface):
@@ -320,9 +344,9 @@ def rogue_dhcp_server_detector(interface):
     for reply in ans:
         mac_ip[reply[1][Ether].src] = reply[1][IP].src
         #Printing the results
-        print("\nActive DHCP servers currently residing on your LAN:\n")
+        print "\nActive DHCP servers currently residing on your LAN:\n")
     for mac, ip in mac_ip.iteritems():
-        print("IP Address: %s, MAC Address: %s\n" % (ip, mac))
+        print "IP Address: %s, MAC Address: %s\n" % (ip, mac))
 
 # Basic NMAP Application
 def nmap_scanner():
@@ -340,25 +364,25 @@ def nmap_scanner():
         #The results, based on open/closed ports
         for sent, received in ans:
             if received.haslayer(TCP) and str(received[TCP].flags) == "18":
-                print(str(sent[TCP].dport) + " is OPEN!")
+                print str(sent[TCP].dport) + " is OPEN!"
                 open_ports.append(int(sent[TCP].dport))
             elif received.haslayer(TCP) and str(received[TCP].flags) == "20":
-                print(str(sent[TCP].dport) + " is closed!")
+                print str(sent[TCP].dport) + " is closed!"
             elif received.haslayer(ICMP) and str(received[ICMP].type) == "3":
-                print(str(sent[TCP].dport) + " is filtered!")
+                print str(sent[TCP].dport) + " is filtered!"
         #Handling unanswered packets
         for sent in unans:
-            print(str(sent[TCP].dport) + " is filtered!")
+            print str(sent[TCP].dport) + " is filtered!"
         return open_ports
     #Checking hosts via ICMP
     def icmp_scan():
         for target in targets:
             ping_reply = srp1(Ether() / IP(dst = target) / ICMP(), timeout = 2, iface = interface, verbose = 0)
         if str(type(ping_reply)) == "<type 'NoneType'>" or ping_reply.getlayer(ICMP).type == "3":
-            print("\n---> Host with IP address %s is down or unreachable." % target)
+            print "\n---> Host with IP address %s is down or unreachable." % target
         else:
-            print("\n\n---> Host with IP address %s and MAC address %s is up." % (target, ping_reply[Ether].src))
-            print("\nTCP Ports:\n")
+            print "\n\n---> Host with IP address %s and MAC address %s is up." % (target, ping_reply[Ether].src)
+            print "\nTCP Ports:\n"
         #Calling the TCP scanning function
         open_ports = tcp_scan(target, ports)
         if len(open_ports) > 0:
@@ -368,25 +392,25 @@ def nmap_scanner():
         #print ttl, window
         #Identifying the host OS based on the TTL and Window Size values in 'pkt'
         if ttl == "128" and window == "65535":
-            print("\nGuessing OS type... Windows XP.\n")
+            print "\nGuessing OS type... Windows XP.\n"
         elif ttl == "128" and window == "16384":
-            print("\nGuessing OS type... Windows 2000/Server 2003.\n")
+            print "\nGuessing OS type... Windows 2000/Server 2003.\n"
         elif ttl == "128" and window == "8192":
-            print("\nGuessing OS type... Windows 7/Vista/Server 2008.\n")
+            print "\nGuessing OS type... Windows 7/Vista/Server 2008.\n"
         elif ttl == "64" and window == "5840":
-            print("\nGuessing OS type... Linux Kernel 2.x.\n")
+            print "\nGuessing OS type... Linux Kernel 2.x.\n"
         elif ttl == "64" and window == "14600":
-            print("\nGuessing OS type... Linux Kernel 3.x.\n")
+            print "\nGuessing OS type... Linux Kernel 3.x.\n"
         elif ttl == "64" and window == "65535":
-            print("\nGuessing OS type... FreeBSD.\n")
+            print "\nGuessing OS type... FreeBSD.\n"
         elif ttl == "64" and window == "5720":
-            print("Guessing OS type... Chrome OS/Android.\n")
+            print "Guessing OS type... Chrome OS/Android.\n"
         elif ttl == "255" and window == "4128":
-            print("Guessing OS type... Cisco IOS 12.4.\n")
+            print "Guessing OS type... Cisco IOS 12.4.\n"
         elif ttl == "64" and window == "65535":
-            print("Guessing OS type... MAC OS.\n")
+            print "Guessing OS type... MAC OS.\n"
         else:
-            print("Cannot detect host OS --> no open ports found.")
+            print "Cannot detect host OS --> no open ports found."
     #Running the function
     icmp_scan()
 
@@ -401,42 +425,42 @@ def ip_address_check(ip_address):
             break
             
         else:
-            print("\nThe IP address is INVALID! Please retry!\n")
+            print "\nThe IP address is INVALID! Please retry!\n"
             continue
 
 ################## USER MENU #################
 try:
     # Enter option for the first screen
     while True:
-        print("\nUse this tool to:\n1 - Traffic sniffing using scapy\n2 - Basic Traceroute\n3 - TCP SYN Traceroute\n" +
+        print "\nUse this tool to:\n1 - Traffic sniffing using scapy\n2 - Basic Traceroute\n3 - TCP SYN Traceroute\n" +
         "4 - UDP Traceroute\n5 - DNS Traceroute\n6 - TCP SYN Scan\n7 - TCP ACK Scan\n8 - TCP FIN Scan\n9 - TCP XMAS Scan\n" +
         "10 - TCP Null Scan\n11 - TCP PORT Scan\n12 - ARP Ping\n13 - ICMP Ping\n14 - TCP Ping\n15 - UDP Ping\n16 - Basic ARP Monitor\n" +
         "17 - ARP Cache Poisoning\n18 - SYN Flooding\n19 - DHCP Starvation – Windows Server\n20 - Rogue DHCP Server Detector\n" +
-        "21 - Basic NMAP Application\n")
+        "21 - Basic NMAP Application\n"
         
         user_option_sim = raw_input("Enter your choice: ")
         
         if user_option_sim == "1":
             while True:
-                print("\n ex: ip= '172.16.1.3' interface = 'enp0s3'")
+                print "\n ex: ip= '172.16.1.3' interface = 'enp0s3'"
 
                 ip = raw_input("\nEnter a Valid IP address: ")
                 ip_address_check(ip)
                 interface = raw_input("Enter interface on which to sniff packets: ")
 
-                print("\nWaiting for clients to obtain IP addresses...\n")
+                print "\nWaiting for clients to obtain IP addresses...\n"
 
                 try:
                     #Calling the function for the required number of times (pkt_no)
                     traffic_sniffing_scapy(ip,interface)
 
                 except IndexError:
-                    print("Check your IP, Interface and try again.\n")
+                    print "Check your IP, Interface and try again.\n"
                     sys.exit()
                 
         elif user_option_sim == "2":
             while True:
-                print("\n ex : target = 'www.google.com'")
+                print "\n ex : target = 'www.google.com'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -445,12 +469,12 @@ try:
                     basic_traceroute(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "3":
             while True:
-                print("\n ex : target = 'www.google.com'/ '8.8.8.8'")
+                print "\n ex : target = 'www.google.com'/ '8.8.8.8'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -459,12 +483,12 @@ try:
                     tcp_syn_traceroute(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "4":
             while True:
-                print("\n ex : target = 'www.google.com'/ '8.8.8.8'")
+                print "\n ex : target = 'www.google.com'/ '8.8.8.8'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -473,12 +497,12 @@ try:
                     udp_traceroute(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "5":
             while True:
-                print("\n ex : target = '8.8.8.8'")
+                print "\n ex : target = '8.8.8.8'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -487,12 +511,12 @@ try:
                     dns_traceroute(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "6":
             while True:
-                print("\n ex : target = '172.16.1.2'")
+                print "\n ex : target = '172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -501,12 +525,12 @@ try:
                     tcp_syn_scan(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "7":
             while True:
-                print("\n ex : target = '172.16.1.2'")
+                print "\n ex : target = '172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -515,12 +539,12 @@ try:
                     tcp_ack_scan(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "8":
             while True:
-                print("\n ex : target = '172.16.1.2'")
+                print "\n ex : target = '172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -529,12 +553,12 @@ try:
                     tcp_fin_scan(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "9":
             while True:
-                print("\n ex : target = '172.16.1.2'")
+                print "\n ex : target = '172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -543,12 +567,12 @@ try:
                     tcp_xmas_scan(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "10":
             while True:
-                print("\n ex : target = '172.16.1.2'")
+                print "\n ex : target = '172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -557,12 +581,12 @@ try:
                     tcp_null_scan(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "11":
             while True:
-                print("\n ex : target = '172.16.1.2'")
+                print "\n ex : target = '172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -571,12 +595,12 @@ try:
                     tcp_port_scan(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "12":
             while True:
-                print("\n ex: targetSubnet='172.16.1.0/24' targetIp = '172.16.1.*'")
+                print "\n ex: targetSubnet='172.16.1.0/24' targetIp = '172.16.1.*'"
 
                 targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
                 targetIp = raw_input("\nEnter a Valid Target IP: ")
@@ -587,12 +611,12 @@ try:
                     arp_ping(targetSubnet, targetIp, interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "13":
             while True:
-                print("\n ex: targetSubnet='172.16.1.2-10'")
+                print "\n ex: targetSubnet='172.16.1.2-10'"
 
                 targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
                 interface = raw_input("Enter interface on which to ping packets: ")
@@ -602,12 +626,12 @@ try:
                     icmp_ping(targetSubnet, interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "14":
             while True:
-                print("\n ex: targetSubnet='172.16.1.2-10'")
+                print "\n ex: targetSubnet='172.16.1.2-10'"
 
                 targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
                 interface = raw_input("Enter interface on which to ping packets: ")
@@ -617,12 +641,12 @@ try:
                     tcp_ping(targetSubnet, interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "15":
             while True:
-                print("\n ex: targetSubnet='172.16.1.2-10'")
+                print "\n ex: targetSubnet='172.16.1.2-10'"
 
                 targetSubnet = raw_input("\nEnter a Valid Target Subnet: ")
                 interface = raw_input("Enter interface on which to ping packets: ")
@@ -632,12 +656,12 @@ try:
                     udp_ping(targetSubnet, interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "16":
             while True:
-                print("\n ex: check arp packet format")
+                print "\n ex: check arp packet format"
 
                 interface = raw_input("Enter the arp packet to be monitored: ")
 
@@ -646,12 +670,12 @@ try:
                     arp_monitor(packet)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "17":
             while True:
-                print("\n ex: sourceIp = '172.16.1.233' destinationIp= '172.16.1.3' interface = 'enp0s3'")
+                print "\n ex: sourceIp = '172.16.1.233' destinationIp= '172.16.1.3' interface = 'enp0s3'"
 
                 sourceIp = raw_input("\nEnter a Valid Source IP: ")
                 destinationIp = raw_input("\nEnter a Valid destination IP: ")
@@ -662,12 +686,12 @@ try:
                     arp_cache_poisoning(sourceIp, destinationIp, interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "18":
             while True:
-                print("\n ex: targetSubnet='172.16.1.2'")
+                print "\n ex: targetSubnet='172.16.1.2'"
 
                 target = raw_input("\nEnter a Valid Target: ")
 
@@ -676,12 +700,12 @@ try:
                     syn_flooding(target)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "19":
             while True:
-                print("\n ex: interface = 'enp0s3'")
+                print "\n ex: interface = 'enp0s3'"
 
                 interface = raw_input("Enter interface dhcp starvation attack: ")
 
@@ -690,12 +714,12 @@ try:
                     dhcp_starvation(interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "20":
             while True:
-                print("\n ex: interface = 'enp0s3'")
+                print "\n ex: interface = 'enp0s3'"
 
                 interface = raw_input("Enter interface rogue dhcp server detector: ")
 
@@ -704,20 +728,20 @@ try:
                     rogue_dhcp_server_detector(interface)
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         elif user_option_sim == "21":
             while True:
-                print("\n ex: targets = ['172.16.1.2', '172.16.1.3', '172.16.1.150', '172.16.1.100'] "
-                      "ports = [50743, 111, 135, 22] interface = 'enp0s3'")
+                print "\n ex: targets = ['172.16.1.2', '172.16.1.3', '172.16.1.150', '172.16.1.100'] " "ports " \
+                      "= [50743, 111, 135, 22] interface = 'enp0s3'"
 
                 try:
                     # Calling the function for nmap scanner
                     nmap_scanner()
 
                 except IndexError:
-                    print("Check your target and try again.\n")
+                    print "Check your target and try again.\n"
                     sys.exit()
 
         else:
